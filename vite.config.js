@@ -4,10 +4,10 @@ import { defineConfig } from 'vite'
 export default defineConfig({
   build: {
     lib: {
-      entry: resolve(__dirname, 'index.js'),
-      name: '@mind-elixir/template-name',
+      entry: resolve(__dirname, 'nodeMenu.ts'),
+      name: '@mind-elixir/node-menu',
       // the proper extensions will be added
-      fileName: 'template-name',
+      fileName: 'node-menu',
     },
     rollupOptions: {
       // make sure to externalize deps that shouldn't be bundled

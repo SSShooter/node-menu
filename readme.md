@@ -1,9 +1,9 @@
-# mind-elixir plugin template
+# @mind-elixir/node-menu
+
+It was originally a built-in plugin of [mind-elixir](https://github.com/ssshooter/mind-elixir-core), but it was extracted after version 2.0.0 because it should be highly customizable. Please feel free to fork this repository and create your own node menu.
 
 ## How To Use
 
-- replace all `template-name` in `package.json`
-- replace all `template-name` in `vite.config.js`
-- add `peerDependencies` if needed
-- run `npm run dev` to develop the plugin (the entry point is `main.js`)
-- run `npm run build` to build the plugin (the entry point is `index.js`)
+```
+npm i @mind-elixir/node-menu
+```

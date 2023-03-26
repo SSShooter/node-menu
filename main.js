@@ -1,7 +1,7 @@
 import MindElixir, { E } from 'mind-elixir'
 import example from 'mind-elixir/dist/example1'
 
-import pluginName from './index'
+import pluginName from './nodeMenu'
 // import pluginName from '@mind-elixir/plugin-name'
 
 const app = document.querySelector('#app')
