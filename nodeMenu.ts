@@ -1,4 +1,5 @@
 import './nodeMenu.less'
+import './icons/iconfont.js'
 import i18n from './i18n.js'
 
 const createDiv = (id, innerHTML) => {
@@ -30,6 +31,7 @@ const colorList = [
 ]
 
 export default function (mind) {
+  console.log('install node menu')
   function clearSelect(klass, remove) {
     const elems = mind.container.querySelectorAll(klass)
     ;[].forEach.call(elems, function (el) {

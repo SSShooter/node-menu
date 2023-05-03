@@ -19,10 +19,11 @@
     "preview": "vite preview"
   },
   "devDependencies": {
-    "mind-elixir": "^1.2.0",
+    "less": "^4.1.3",
+    "mind-elixir": "^2.0.1",
     "vite": "^3.0.0"
   },
-  "dependencies": {
-    "less": "^4.1.3"
+  "peerDependencies": {
+    "mind-elixir": "^2.0.1"
   }
 }

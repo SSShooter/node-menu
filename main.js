@@ -1,8 +1,8 @@
 import MindElixir, { E } from 'mind-elixir'
 import example from 'mind-elixir/dist/example1'
 
-import pluginName from './nodeMenu'
-// import pluginName from '@mind-elixir/plugin-name'
+import nodeMenu from './nodeMenu'
+// import nodeMenu from '@mind-elixir/plugin-name'
 
 const app = document.querySelector('#app')
 app.style.marginTop = '50px'
@@ -31,7 +31,6 @@ const options = {
     ],
   },
   toolBar: true,
-  nodeMenu: true,
   keypress: true,
   allowUndo: false,
   before: {
@@ -54,7 +53,7 @@ const options = {
 }
 
 const mind = new MindElixir(options)
-mind.install(pluginName)
+mind.install(nodeMenu)
 const data = MindElixir.new('new topic')
 mind.init(example) // or try `example`
 function sleep() {
