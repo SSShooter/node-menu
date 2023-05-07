@@ -20,7 +20,7 @@
   },
   "devDependencies": {
     "less": "^4.1.3",
-    "mind-elixir": "^2.0.1",
+    "mind-elixir": "2.0.2",
     "vite": "^3.0.0"
   },
   "peerDependencies": {
