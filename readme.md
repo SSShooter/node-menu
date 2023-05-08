@@ -7,3 +7,12 @@ It was originally a built-in plugin of [mind-elixir](https://github.com/ssshoote
 ```
 npm i @mind-elixir/node-menu
 ```
+
+```javascript
+import MindElixir from 'mind-elixir'
+import nodeMenu from '@mind-elixir/node-menu'
+
+const mind = new MindElixir(options)
+mind.install(nodeMenu)
+mind.init(data)
+```
