@@ -178,13 +178,12 @@ export default function (mind) {
   }
   let state = 'open'
   buttonContainer.onclick = e => {
+    menuContainer.classList.toggle('close')
     if (state === 'open') {
-      state = 'close'
-      menuContainer.className = 'close'
+      state = 'close' 
       buttonContainer.innerHTML = `<svg class="icon" aria-hidden="true"><use xlink:href="#icon-menu"></use></svg>`
     } else {
       state = 'open'
-      menuContainer.className = ''
       buttonContainer.innerHTML = `<svg class="icon" aria-hidden="true"><use xlink:href="#icon-close"></use></svg>`
     }
   }
