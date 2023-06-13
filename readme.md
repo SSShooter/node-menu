@@ -11,6 +11,7 @@ npm i @mind-elixir/node-menu
 ```javascript
 import MindElixir from 'mind-elixir'
 import nodeMenu from '@mind-elixir/node-menu'
+import '@mind-elixir/node-menu/dist/style.css'
 
 const mind = new MindElixir(options)
 mind.install(nodeMenu)
