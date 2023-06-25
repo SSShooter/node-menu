@@ -175,6 +175,10 @@ export default function (mind) {
   memoInput.onchange = (e: InputEvent & { target: HTMLInputElement }) => {
     if (!mind.currentNode) return
     mind.currentNode.nodeObj.memo = e.target.value
+    mind.bus.fire('operation', {
+      name: 'updateMemo',
+      obj: mind.currentNode.nodeObj, 
+    })
   }
   let state = 'open'
   buttonContainer.onclick = e => {
