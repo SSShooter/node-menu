@@ -237,10 +237,10 @@ mime@^1.4.1:
   resolved "https://mirrors.cloud.tencent.com/npm/mime/-/mime-1.6.0.tgz"
   integrity sha512-x0Vn8spI+wuJ1O6S7gnbaQg8Pxh4NNHb7KSINmEWKiPE4RKOplvijn+NkmYmmRgP68mc70j2EbeTFRsrswaQeg==
 
-mind-elixir@2.0.2:
-  version "2.0.2"
-  resolved "https://mirrors.cloud.tencent.com/npm/mind-elixir/-/mind-elixir-2.0.2.tgz#b7a2e6f677448a30c51122910c1ceef16fc06788"
-  integrity sha512-/iIeX4CpOAro4UGvEhh6qzdAV7lZZ5DItLwzJYjBStQZ7dSOKH3ZmxkIPQlQlbjTSCiOWt6QBOdyWFINosjgiA==
+mind-elixir@^2.0.5:
+  version "2.0.5"
+  resolved "https://mirrors.cloud.tencent.com/npm/mind-elixir/-/mind-elixir-2.0.5.tgz#885f5af0b965c3c434486f72518b605b2538f7a9"
+  integrity sha512-ALIGkvsP80EvQLD6gH1HgdBT0olZLaVWtnVfL+eEfivamh8jdDWo+mVUoqFxKFzdDPxITYQ0z/NmMSbdyDfxEA==
 
 ms@^2.1.1:
   version "2.1.3"
