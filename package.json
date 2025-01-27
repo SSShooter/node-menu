@@ -1,6 +1,6 @@
 {
   "name": "@mind-elixir/node-menu",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "type": "module",
   "files": [
     "dist"
@@ -28,6 +28,6 @@
     "vite": "^3.0.0"
   },
   "peerDependencies": {
-    "mind-elixir": "^2.0.1"
+    "mind-elixir": ">2.0.1"
   }
 }
