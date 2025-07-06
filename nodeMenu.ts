@@ -33,7 +33,7 @@ const colorList = [
 
 export default function (mind: MindElixirInstance) {
   console.log('install node menu')
-  // 防止 onchange 响应时，当前节点已被取消选择
+  // Prevent current node is unselected during onchange event
   let lastNode:Topic|null = null
   function clearSelect(klass, remove) {
     const elems = mind.container.querySelectorAll(klass)
