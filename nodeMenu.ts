@@ -1,7 +1,7 @@
 import './nodeMenu.less'
 import './icons/iconfont.js'
 import i18n from './i18n.js'
-import type { MindElixirInstance } from 'mind-elixir'
+import type { MindElixirInstance, Topic } from 'mind-elixir'
 
 const createDiv = (id, innerHTML) => {
   const div = document.createElement('div')
@@ -33,6 +33,8 @@ const colorList = [
 
 export default function (mind: MindElixirInstance) {
   console.log('install node menu')
+  // 防止 onchange 响应时，当前节点已被取消选择
+  let lastNode:Topic|null = null
   function clearSelect(klass, remove) {
     const elems = mind.container.querySelectorAll(klass)
     ;[].forEach.call(elems, function (el) {
@@ -96,6 +98,16 @@ export default function (mind: MindElixirInstance) {
   <use xlink:href="#icon-close"></use>
   </svg></div>
   `
+
+  // prevent unselect node
+  menuContainer.addEventListener('mousedown', (e) => {
+    e.stopPropagation()
+  })
+  // workaround for mind elixir onkeydown e.preventDefault()
+  menuContainer.addEventListener('keydown', (e) => {
+    e.stopPropagation()
+  })
+
   menuContainer.appendChild(styleDiv)
   menuContainer.appendChild(tagDiv)
   menuContainer.appendChild(iconDiv)
@@ -106,18 +118,17 @@ export default function (mind: MindElixirInstance) {
 
   // query input element
   const sizeSelector = menuContainer.querySelectorAll('.size')
-  const bold: HTMLElement = menuContainer.querySelector('.bold')
+  const bold: HTMLElement = menuContainer.querySelector('.bold')!
   const buttonContainer: HTMLElement =
-    menuContainer.querySelector('.button-container')
-  const fontBtn: HTMLElement = menuContainer.querySelector('.font')
-  const tagInput: HTMLInputElement = mind.container.querySelector('.nm-tag')
-  const iconInput: HTMLInputElement = mind.container.querySelector('.nm-icon')
-  const urlInput: HTMLInputElement = mind.container.querySelector('.nm-url')
-  const memoInput: HTMLInputElement = mind.container.querySelector('.nm-memo')
+    menuContainer.querySelector('.button-container')!
+  const fontBtn: HTMLElement = menuContainer.querySelector('.font')!
+  const tagInput: HTMLInputElement = menuContainer.querySelector('.nm-tag')!
+  const iconInput: HTMLInputElement = menuContainer.querySelector('.nm-icon')!
+  const urlInput: HTMLInputElement = menuContainer.querySelector('.nm-url')!
+  const memoInput: HTMLInputElement = menuContainer.querySelector('.nm-memo')!
 
   // handle input and button click
   let bgOrFont
-  const E = mind.findEle
   menuContainer.onclick = (e) => {
     if (!mind.currentNode) return
     const nodeObj = mind.currentNode.nodeObj
@@ -138,70 +149,72 @@ export default function (mind: MindElixirInstance) {
       clearSelect('.palette', 'nmenu-selected')
       bgOrFont = 'background'
       target.className = 'background selected'
-      target.previousElementSibling.className = 'font'
+      target.previousElementSibling!.className = 'font'
       if (nodeObj.style && nodeObj.style.background) {
         menuContainer.querySelector(
           '.palette[data-color="' + nodeObj.style.background + '"]'
-        ).className = 'palette nmenu-selected'
+        )!.className = 'palette nmenu-selected'
       }
     } else if (target.className === 'font') {
       clearSelect('.palette', 'nmenu-selected')
       bgOrFont = 'font'
       target.className = 'font selected'
-      target.nextElementSibling.className = 'background'
+      target.nextElementSibling!.className = 'background'
       if (nodeObj.style && nodeObj.style.color) {
         menuContainer.querySelector(
           '.palette[data-color="' + nodeObj.style.color + '"]'
-        ).className = 'palette nmenu-selected'
+        )!.className = 'palette nmenu-selected'
       }
     }
   }
   Array.from(sizeSelector).map((dom) => {
     ;(dom as HTMLElement).onclick = (e) => {
+      if(!lastNode) return 
       clearSelect('.size', 'size-selected')
       const size = e.currentTarget as HTMLElement
       size.className = 'size size-selected'
-      mind.reshapeNode(mind.currentNode, {
-        style: { fontSize: size.dataset.size },
+      mind.reshapeNode(lastNode, {
+        style: { fontSize: size.dataset.size + 'px' },
       })
     }
   })
   bold.onclick = (e: MouseEvent & { currentTarget: Element }) => {
+    if (!lastNode) return
     let fontWeight = ''
-    if (mind.currentNode.nodeObj?.style?.fontWeight === 'bold') {
+    if (lastNode.nodeObj?.style?.fontWeight === 'bold') {
       e.currentTarget.className = 'bold'
     } else {
       fontWeight = 'bold'
       e.currentTarget.className = 'bold size-selected'
     }
-    mind.reshapeNode(mind.currentNode, { style: { fontWeight } })
+    mind.reshapeNode(lastNode, { style: { fontWeight } })
   }
   tagInput.onchange = (e: InputEvent & { target: HTMLInputElement }) => {
-    if (!mind.currentNode) return
+    if (!lastNode) return
     if (typeof e.target.value === 'string') {
       const newTags = e.target.value.split(',')
-      mind.reshapeNode(mind.currentNode, { tags: newTags.filter((tag) => tag) })
+      mind.reshapeNode(lastNode, { tags: newTags.filter((tag) => tag) })
     }
   }
   iconInput.onchange = (e: InputEvent & { target: HTMLInputElement }) => {
-    if (!mind.currentNode) return
+    if (!lastNode) return
     if (typeof e.target.value === 'string') {
       const newIcons = e.target.value.split(',')
-      mind.reshapeNode(mind.currentNode, {
+      mind.reshapeNode(lastNode, {
         icons: newIcons.filter((icon) => icon),
       })
     }
   }
   urlInput.onchange = (e: InputEvent & { target: HTMLInputElement }) => {
-    if (!mind.currentNode) return
-    mind.reshapeNode(mind.currentNode, { hyperLink: e.target.value })
+    if (!lastNode) return
+    mind.reshapeNode(lastNode, { hyperLink: e.target.value })
   }
   memoInput.onchange = (e: InputEvent & { target: HTMLInputElement }) => {
-    if (!mind.currentNode) return
-    mind.currentNode.nodeObj.memo = e.target.value
+    if (!lastNode) return
+    lastNode.nodeObj.memo = e.target.value
     mind.bus.fire('operation', {
       name: 'updateMemo',
-      obj: mind.currentNode.nodeObj,
+      obj: lastNode.nodeObj,
     })
   }
   let state = 'open'
@@ -217,31 +230,34 @@ export default function (mind: MindElixirInstance) {
   }
 
   // handle node selection
-  mind.bus.addListener('unselectNode', function () {
+  mind.bus.addListener('unselectNodes', function () {
     menuContainer.hidden = true
   })
-  mind.bus.addListener('selectNode', function (nodeObj, clickEvent) {
-    if (!clickEvent) return
+  mind.bus.addListener('selectNodes', function (nodeObjs) {
+    // if (!clickEvent) return
+    if(nodeObjs.length !== 1) return 
+    const nodeObj = nodeObjs[0]
+    lastNode = mind.currentNode
     menuContainer.hidden = false
     clearSelect('.palette', 'nmenu-selected')
     clearSelect('.size', 'size-selected')
     clearSelect('.bold', 'size-selected')
     bgOrFont = 'font'
     fontBtn.className = 'font selected'
-    fontBtn.nextElementSibling.className = 'background'
+    fontBtn.nextElementSibling!.className = 'background'
     if (nodeObj.style) {
       if (nodeObj.style.fontSize) {
         menuContainer.querySelector(
           '.size[data-size="' + nodeObj.style.fontSize + '"]'
-        ).className = 'size size-selected'
+        )!.className = 'size size-selected'
       }
       if (nodeObj.style.fontWeight) {
-        menuContainer.querySelector('.bold').className = 'bold size-selected'
+        menuContainer.querySelector('.bold')!.className = 'bold size-selected'
       }
       if (nodeObj.style.color) {
         menuContainer.querySelector(
           '.palette[data-color="' + nodeObj.style.color + '"]'
-        ).className = 'palette nmenu-selected'
+        )!.className = 'palette nmenu-selected'
       }
     }
     if (nodeObj.tags) {

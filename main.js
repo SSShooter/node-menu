@@ -1,5 +1,6 @@
-import MindElixir, { E } from 'mind-elixir'
-import example from 'mind-elixir/dist/example1'
+import MindElixir from 'mind-elixir'
+import example from 'mind-elixir/example'
+import 'mind-elixir/style'
 
 import nodeMenu from './nodeMenu'
 // import nodeMenu from '@mind-elixir/plugin-name'
@@ -61,7 +62,6 @@ function sleep() {
     setTimeout(() => res(), 1000)
   })
 }
-console.log('test E function', E('bd4313fbac40284b'))
 window.currentOperation = null
 mind.bus.addListener('operation', (operation) => {
   console.log(operation)
@@ -85,4 +85,3 @@ mind.bus.addListener('expandNode', (node) => {
 })
 window.m = mind
 window.M = MindElixir
-window.E = MindElixir.E
