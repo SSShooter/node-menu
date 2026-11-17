@@ -17,8 +17,11 @@ const cn = {
   tagsSeparate: '多个标签半角逗号分隔',
   iconsSeparate: '多个图标半角逗号分隔',
   url: 'URL',
+  note: '备注',
 }
-export default {
+type LocalePack = typeof cn
+
+const i18n: Record<string, LocalePack> = {
   cn,
   zh_CN: cn,
   zh_TW: {
@@ -40,6 +43,7 @@ export default {
     tagsSeparate: '多個標簽半角逗號分隔',
     iconsSeparate: '多個圖標半角逗號分隔',
     url: 'URL',
+    note: '備註',
   },
   de: {
     addChild: 'Kindknoten hinzufügen',
@@ -60,6 +64,7 @@ export default {
     tagsSeparate: 'Durch Komma getrennte Tags',
     iconsSeparate: 'Durch Komma getrennte Icons',
     url: 'URL',
+    note: 'Notiz',
   },
   en: {
     addChild: 'Add child',
@@ -80,6 +85,7 @@ export default {
     tagsSeparate: 'Separate tags by comma',
     iconsSeparate: 'Separate icons by comma',
     url: 'URL',
+    note: 'Note',
   },
   ru: {
     addChild: 'Добавить дочерний элемент',
@@ -98,6 +104,8 @@ export default {
     icon: 'Иконка',
     tagsSeparate: 'Разделяйте теги запятой',
     iconsSeparate: 'Разделяйте иконки запятой',
+    url: 'URL',
+    note: 'Заметка',
   },
   ja: {
     addChild: '子ノードを追加する',
@@ -118,6 +126,7 @@ export default {
     tagsSeparate: '複数タグはカンマ区切り',
     iconsSeparate: '複数アイコンはカンマ区切り',
     url: 'URL',
+    note: 'メモ',
   },
   pt: {
     addChild: 'Adicionar item filho',
@@ -138,5 +147,8 @@ export default {
     tagsSeparate: 'Separe tags por virgula',
     iconsSeparate: 'Separe icones por virgula',
     url: 'URL',
+    note: 'Nota',
   },
 }
+
+export default i18n

@@ -1,9 +1,10 @@
 import './nodeMenu.less'
 import './icons/iconfont.js'
 import i18n from './i18n.js'
-import type { MindElixirInstance, Topic } from 'mind-elixir'
+import type MindElixir from 'mind-elixir'
+import type { NodeObj, Topic } from 'mind-elixir'
 
-const createDiv = (id, innerHTML) => {
+const createDiv = (id: string, innerHTML: string) => {
   const div = document.createElement('div')
   div.id = id
   div.innerHTML = innerHTML
@@ -31,19 +32,22 @@ const colorList = [
   '#2ecc71',
 ]
 
-export default function (mind: MindElixirInstance) {
+export default function (mind: MindElixir) {
   console.log('install node menu')
   // Prevent current node is unselected during onchange event
-  let lastNode:Topic|null = null
-  function clearSelect(klass, remove) {
+  let lastNode: Topic | null = null
+  function clearSelect(klass: string, remove: string) {
     const elems = mind.container.querySelectorAll(klass)
-    ;[].forEach.call(elems, function (el) {
+    elems.forEach((el) => {
       el.classList.remove(remove)
     })
   }
 
   // create element
-  const locale = i18n[mind.locale] ? mind.locale : 'en'
+  // `locale` was removed from the core instance in MindElixir v6, but it still
+  // exists in v5. Keep reading it when present, otherwise fall back to English.
+  const mindLocale = (mind as MindElixir & { locale?: string }).locale
+  const locale = mindLocale && i18n[mindLocale] ? mindLocale : 'en'
   const styleDiv = createDiv(
     'nm-style',
     `
@@ -86,7 +90,7 @@ export default function (mind: MindElixirInstance) {
   const memoDiv = createDiv(
     'nm-memo',
     `${
-      i18n[locale].memo || 'Memo'
+      i18n[locale].note || 'Note'
     }<textarea class="nm-memo" rows="5" tabindex="-1" />`
   )
 
@@ -125,10 +129,11 @@ export default function (mind: MindElixirInstance) {
   const tagInput: HTMLInputElement = menuContainer.querySelector('.nm-tag')!
   const iconInput: HTMLInputElement = menuContainer.querySelector('.nm-icon')!
   const urlInput: HTMLInputElement = menuContainer.querySelector('.nm-url')!
-  const memoInput: HTMLInputElement = menuContainer.querySelector('.nm-memo')!
+  const memoInput: HTMLTextAreaElement =
+    menuContainer.querySelector('.nm-memo')!
 
   // handle input and button click
-  let bgOrFont
+  let bgOrFont: 'font' | 'background' = 'font'
   menuContainer.onclick = (e) => {
     if (!mind.currentNode) return
     const nodeObj = mind.currentNode.nodeObj
@@ -178,44 +183,36 @@ export default function (mind: MindElixirInstance) {
       })
     }
   })
-  bold.onclick = (e: MouseEvent & { currentTarget: Element }) => {
+  bold.onclick = () => {
     if (!lastNode) return
     let fontWeight = ''
     if (lastNode.nodeObj?.style?.fontWeight === 'bold') {
-      e.currentTarget.className = 'bold'
+      bold.className = 'bold'
     } else {
       fontWeight = 'bold'
-      e.currentTarget.className = 'bold size-selected'
+      bold.className = 'bold size-selected'
     }
     mind.reshapeNode(lastNode, { style: { fontWeight } })
   }
-  tagInput.onchange = (e: InputEvent & { target: HTMLInputElement }) => {
+  tagInput.onchange = () => {
     if (!lastNode) return
-    if (typeof e.target.value === 'string') {
-      const newTags = e.target.value.split(',')
-      mind.reshapeNode(lastNode, { tags: newTags.filter((tag) => tag) })
-    }
+    const newTags = tagInput.value.split(',')
+    mind.reshapeNode(lastNode, { tags: newTags.filter((tag) => tag) })
   }
-  iconInput.onchange = (e: InputEvent & { target: HTMLInputElement }) => {
+  iconInput.onchange = () => {
     if (!lastNode) return
-    if (typeof e.target.value === 'string') {
-      const newIcons = e.target.value.split(',')
-      mind.reshapeNode(lastNode, {
-        icons: newIcons.filter((icon) => icon),
-      })
-    }
-  }
-  urlInput.onchange = (e: InputEvent & { target: HTMLInputElement }) => {
-    if (!lastNode) return
-    mind.reshapeNode(lastNode, { hyperLink: e.target.value })
-  }
-  memoInput.onchange = (e: InputEvent & { target: HTMLInputElement }) => {
-    if (!lastNode) return
-    lastNode.nodeObj.memo = e.target.value
-    mind.bus.fire('operation', {
-      name: 'updateMemo',
-      obj: lastNode.nodeObj,
+    const newIcons = iconInput.value.split(',')
+    mind.reshapeNode(lastNode, {
+      icons: newIcons.filter((icon) => icon),
     })
+  }
+  urlInput.onchange = () => {
+    if (!lastNode) return
+    mind.reshapeNode(lastNode, { hyperLink: urlInput.value })
+  }
+  memoInput.onchange = () => {
+    if (!lastNode) return
+    mind.reshapeNode(lastNode, { note: memoInput.value })
   }
   let state = 'open'
   buttonContainer.onclick = (e) => {
@@ -233,7 +230,7 @@ export default function (mind: MindElixirInstance) {
   mind.bus.addListener('unselectNodes', function () {
     menuContainer.hidden = true
   })
-  mind.bus.addListener('selectNodes', function (nodeObjs) {
+  mind.bus.addListener('selectNodes', function (nodeObjs: NodeObj[]) {
     // if (!clickEvent) return
     if(nodeObjs.length !== 1) return 
     const nodeObj = nodeObjs[0]
@@ -261,7 +258,10 @@ export default function (mind: MindElixirInstance) {
       }
     }
     if (nodeObj.tags) {
-      tagInput.value = nodeObj.tags.join(',')
+      // v6 tags may be plain strings or `{ text }` objects
+      tagInput.value = nodeObj.tags
+        .map((tag) => (typeof tag === 'string' ? tag : tag.text))
+        .join(',')
     } else {
       tagInput.value = ''
     }
@@ -271,6 +271,6 @@ export default function (mind: MindElixirInstance) {
       iconInput.value = ''
     }
     urlInput.value = nodeObj.hyperLink || ''
-    memoInput.value = nodeObj.memo || ''
+    memoInput.value = nodeObj.note || (nodeObj as NodeObj & { memo?: string }).memo || ''
   })
 }

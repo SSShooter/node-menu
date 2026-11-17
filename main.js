@@ -14,12 +14,8 @@ const options = {
   el: app,
   newTopicName: '子节点',
   direction: MindElixir.SIDE,
-  // direction: MindElixir.RIGHT,
-  locale: 'en',
-  draggable: true,
   editable: true,
-  contextMenu: true,
-  contextMenuOption: {
+  contextMenu: {
     focus: true,
     link: true,
     extend: [
@@ -48,9 +44,6 @@ const options = {
       return true
     },
   },
-  primaryLinkStyle: 1,
-  primaryNodeVerticalGap: 15, // 25
-  primaryNodeHorizontalGap: 15, // 65
 }
 
 const mind = new MindElixir(options)
@@ -66,22 +59,22 @@ window.currentOperation = null
 mind.bus.addListener('operation', (operation) => {
   console.log(operation)
   if (operation.name !== 'finishEdit') window.currentOperation = operation
+  if (operation.name === 'expandNode' || operation.name === 'collapseNode') {
+    console.log('expandNode: ', operation.target)
+  }
   // return {
   //   name: action name,
-  //   obj: target object
+  //   target: target object
   // }
 
-  // name: [insertSibling|addChild|removeNode|beginEdit|finishEdit]
-  // obj: target
+  // name: [insertSibling|addChild|removeNodes|beginEdit|finishEdit]
+  // target: target
 
-  // name: moveNode
-  // obj: {from:target1,to:target2}
+  // name: moveNodesBefore
+  // target: [target1,target2], destination: target
 })
-mind.bus.addListener('selectNode', (node) => {
+mind.bus.addListener('selectNewNode', (node) => {
   console.log(node)
-})
-mind.bus.addListener('expandNode', (node) => {
-  console.log('expandNode: ', node)
 })
 window.m = mind
 window.M = MindElixir
