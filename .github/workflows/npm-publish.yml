@@ -1,29 +1,80 @@
-# This workflow will run tests using node and then publish a package to GitHub Packages when a release is created
-# For more information see: https://help.github.com/actions/language-and-framework-guides/publishing-nodejs-packages
-
-name: Node.js Package
+# Manually triggered release pipeline:
+# build -> create tag + GitHub release (with changelog section) -> publish to npm
+name: Release
 
 on:
-  release:
-    types: [created]
   workflow_dispatch:
 
+permissions:
+  id-token: write # Required for npm OIDC
+  contents: write # Required to create tags and releases
+
 jobs:
-  publish:
+  release:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: pnpm/action-setup@v2
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v4
         with:
-          version: 8
-      - uses: actions/setup-node@v3
+          version: 9
+      - uses: actions/setup-node@v6
         with:
-          node-version: 18
+          node-version: 24
           registry-url: 'https://registry.npmjs.org'
           cache: 'pnpm'
+      - name: Upgrade npm for OIDC support
+        run: npm install -g npm@latest
       - run: pnpm i
-      - run: npm run build
-      - run: npm publish --access public
-        env:
-          NODE_AUTH_TOKEN: ${{secrets.npm_token}}
 
+      - run: npm run build
+
+      - name: Read version and check tag
+        id: version
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          if git ls-remote --exit-code --tags origin "refs/tags/v$VERSION"; then
+            echo "::error::Tag v$VERSION already exists"
+            exit 1
+          fi
+          echo "Releasing v$VERSION"
+
+      - name: Extract changelog section for this version
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          awk -v pat="## $VERSION " '
+            index($0, pat) == 1 { found = 1; next }
+            found && /^## / { exit }
+            found { print }
+          ' CHANGELOG.md > release_notes.md
+          if [ ! -s release_notes.md ]; then
+            echo "::error::No changelog section found for $VERSION in CHANGELOG.md"
+            exit 1
+          fi
+          echo "--- release notes ---"
+          cat release_notes.md
+
+      - name: Create tag and GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          gh release create "v$VERSION" \
+            --target "$GITHUB_SHA" \
+            --title "v$VERSION" \
+            --notes-file release_notes.md
+
+      - name: Determine npm dist-tag
+        id: disttag
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          if [[ "$VERSION" == *-* ]]; then
+            # Prerelease (e.g. 6.1.0-beta.1) -> use the prerelease identifier as dist-tag
+            TAG=$(echo "$VERSION" | sed -E 's/^[^-]+-([a-zA-Z]+).*/\1/')
+          else
+            TAG=latest
+          fi
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "Publishing $VERSION with dist-tag: $TAG"
+
+      - run: NODE_AUTH_TOKEN="" npm publish --access public --tag ${{ steps.disttag.outputs.tag }}
